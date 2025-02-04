@@ -12,39 +12,51 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
     
+    permissions:
+      id-token: write  # Required for OIDC authentication
+      contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
       
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/GitHubActionsTerraformRole
+          aws-region: us-east-1
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: '1.4.0'  # Specify the Terraform version you want
+          terraform_version: '1.4.0'
 
-      - name: Terraform Init and Plan in Network
-        working-directory: ./network  # Change directory to network
+      - name: Terraform Init (Network)
         run: |
+          cd network
           terraform init
+
+      - name: Terraform Plan (Network)
+        run: |
+          cd network
           terraform plan -var-file="../dev.tfvars"
 
-      - name: Terraform Apply in Network
-        working-directory: ./network  # Apply in network directory
-        run: terraform apply -var-file="../dev.tfvars"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
-
-      - name: Terraform Init and Plan in Storage
-        working-directory: ./storage  # Change directory to storage
+      - name: Terraform Apply (Network)
         run: |
+          cd network
+          terraform apply -auto-approve -var-file="../dev.tfvars"
+
+      - name: Terraform Init (Storage)
+        run: |
+          cd ../storage
           terraform init
+
+      - name: Terraform Plan (Storage)
+        run: |
+          cd ../storage
           terraform plan -var-file="../dev.tfvars"
 
-      - name: Terraform Apply in Storage
-        working-directory: ./storage  # Apply in storage directory
-        run: terraform apply -var-file="../dev.tfvars"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
+      - name: Terraform Apply (Storage)
+        run: |
+          cd ../storage
+          terraform apply -auto-approve -var-file="../dev.tfvars"
