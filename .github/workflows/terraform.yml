@@ -1,0 +1,50 @@
+name: Terraform CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: '1.4.0'  # Specify the Terraform version you want
+
+      - name: Terraform Init and Plan in Network
+        working-directory: ./network  # Change directory to network
+        run: |
+          terraform init
+          terraform plan -var-file="../dev.tfvars"
+
+      - name: Terraform Apply in Network
+        working-directory: ./network  # Apply in network directory
+        run: terraform apply -var-file="../dev.tfvars"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+
+      - name: Terraform Init and Plan in Storage
+        working-directory: ./storage  # Change directory to storage
+        run: |
+          terraform init
+          terraform plan -var-file="../dev.tfvars"
+
+      - name: Terraform Apply in Storage
+        working-directory: ./storage  # Apply in storage directory
+        run: terraform apply -var-file="../dev.tfvars"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
