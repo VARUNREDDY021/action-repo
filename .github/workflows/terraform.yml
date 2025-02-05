@@ -39,22 +39,21 @@ jobs:
 
       - name: Terraform Plan (Network)
         run: |
-           terraform -chdir=network plan -var-file="../dev.tfvars"
+          cd network && terraform plan -var-file="../dev.tfvars"
 
       - name: Terraform Apply (Network)
         run: |
-          terraform apply -chdir=network -auto-approve -var-file="../dev.tfvars"
+          cd network && terraform apply -auto-approve -var-file="../dev.tfvars"
 
       - name: Terraform Init (Storage)
         run: |
-          cd ..
           cd storage
-          terraform -chdir=storage init
+          terraform init
 
       - name: Terraform Plan (Storage)
         run: |
-          terraform plan -chdir=storage -var-file="../dev.tfvars"
+          cd storage && terraform plan -var-file="../dev.tfvars"
 
       - name: Terraform Apply (Storage)
         run: |
-          terraform apply -chdir=storage -auto-approve -var-file="../dev.tfvars"
+          cd storage && terraform apply -auto-approve -var-file="../dev.tfvars"
