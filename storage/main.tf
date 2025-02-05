@@ -5,16 +5,16 @@ data "terraform_remote_state" "vpc" {
   config = {
     bucket = "env-project-703671907665-tf-state"
     key    = "vpc/terraform.tfstate"
-    region = "me-central-1"
+    region = "us-east-1"
   }
 }
 data "terraform_remote_state" "comm_sg"{
   backend = "s3"  # Can be changed based on your backend (e.g., s3, gcs, etc.)
   
   config = {
-    bucket = "env-project-703671907665-tf-state"
+    bucket = "env-project-703671907665-tf-state-test1"
     key    = "vpc/terraform.tfstate"
-    region = "me-central-1"
+    region = "us-east-1"
   }
 }
 
@@ -22,9 +22,9 @@ data "terraform_remote_state" "ec2_sg"{
   backend = "s3"  # Can be changed based on your backend (e.g., s3, gcs, etc.)
   
   config = {
-    bucket = "env-project-703671907665-tf-state"
+    bucket = "env-project-703671907665-tf-state-test1"
     key    = "vpc/terraform.tfstate"
-    region = "me-central-1"
+    region = "us-east-1"
   }
 }
 
