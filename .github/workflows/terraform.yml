@@ -1,5 +1,4 @@
 name: Terraform CI/CD Pipeline
-
 on:
   push:
     branches:
@@ -7,18 +6,16 @@ on:
   pull_request:
     branches:
       - main
-
 jobs:
   terraform:
     runs-on: ubuntu-latest
     
     permissions:
-      id-token: write  # Required for OIDC authentication
+      id-token: write
       contents: read
-
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4  # Latest version
+        uses: actions/checkout@v4
 
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v2
@@ -35,35 +32,48 @@ jobs:
         with:
           terraform_version: '1.4.0'
 
-      - name: Check Directory Structure (Debugging)
-        run: ls -R
+      - name: Check Directory Structure and Files
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "\nDirectory contents:"
+          ls -la
+          echo "\nNetwork directory contents:"
+          ls -la network || echo "network directory not found"
+          echo "\nChecking for dev.tfvars:"
+          ls -la dev.tfvars || echo "dev.tfvars not found"
 
       - name: Terraform Init (Network)
         run: |
-          set -e  # Stop execution if any command fails
-          terraform -chdir=network init
+          cd network || exit 1
+          echo "Running terraform init..."
+          TF_LOG=DEBUG terraform init
 
       - name: Terraform Validate (Network)
+        if: success()
         run: |
-          set -e
-          terraform -chdir=network validate
+          cd network
+          terraform validate
 
       - name: Terraform Plan (Network)
+        if: success()
         run: |
-          set -e
-          if [ -f "dev.tfvars" ]; then
-            terraform -chdir=network plan -var-file="../dev.tfvars"
-          else
-            echo "Error: dev.tfvars not found!"
+          if [ ! -f "../dev.tfvars" ]; then
+            echo "Error: dev.tfvars not found in parent directory"
+            ls -la ..
             exit 1
           fi
+          cd network
+          terraform plan -var-file="../dev.tfvars"
 
       - name: Terraform Apply (Network)
+        if: success() && github.ref == 'refs/heads/main'
         run: |
-          set -e
-          terraform -chdir=network apply -auto-approve -var-file="../dev.tfvars"
+          cd network
+          terraform apply -auto-approve -var-file="../dev.tfvars"
 
       - name: Terraform Init (Storage)
+        if: success()
         run: |
-          set -e
-          
+          cd storage || exit 1
+          terraform init
