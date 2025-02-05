@@ -32,44 +32,17 @@ jobs:
         with:
           terraform_version: '1.4.0'
 
-      - name: Check Directory Structure and Files
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "\nDirectory contents:"
-          ls -la
-          echo "\nNetwork directory contents:"
-          ls -la network || echo "network directory not found"
-          echo "\nChecking for dev.tfvars:"
-          ls -la dev.tfvars || echo "dev.tfvars not found"
-
       - name: Terraform Init (Network)
         run: |
-          cd network || exit 1
-          echo "Running terraform init..."
-          TF_LOG=DEBUG terraform init
-
-      - name: Terraform Validate (Network)
-        if: success()
-        run: |
-          cd network
-          terraform validate
+          cd network 
+          terraform init
 
       - name: Terraform Plan (Network)
-        if: success()
         run: |
-          if [ ! -f "../dev.tfvars" ]; then
-            echo "Error: dev.tfvars not found in parent directory"
-            ls -la ..
-            exit 1
-          fi
-          cd network
           terraform plan -var-file="../dev.tfvars"
 
       - name: Terraform Apply (Network)
-        if: success() && github.ref == 'refs/heads/main'
         run: |
-          cd network
           terraform apply -auto-approve -var-file="../dev.tfvars"
 
       - name: Terraform Init (Storage)
