@@ -39,7 +39,7 @@ jobs:
 
       - name: Terraform Plan (Network)
         run: |
-          terraform plan -var-file="../dev.tfvars"
+           terraform -chdir=network plan -var-file="../dev.tfvars"
 
       - name: Terraform Apply (Network)
         run: |
