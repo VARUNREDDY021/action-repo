@@ -25,6 +25,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::703671907665:role/GitHubActionsTerraformRole
           aws-region: us-east-1
+          audience: sts.amazonaws.com 
 
       - name: Verify AWS Credentials
         run: aws sts get-caller-identity
