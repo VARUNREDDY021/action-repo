@@ -39,14 +39,22 @@ jobs:
 
       - name: Terraform Plan (Network)
         run: |
-          terraform plan -var-file="../dev.tfvars"
+          terraform plan -auto-approve -var-file="../dev.tfvars"
 
       - name: Terraform Apply (Network)
         run: |
           terraform apply -auto-approve -var-file="../dev.tfvars"
 
       - name: Terraform Init (Storage)
-        if: success()
         run: |
-          cd storage || exit 1
+          cd ..
+          cd storage
           terraform init
+
+      - name: Terraform Plan (Storage)
+        run: |
+          terraform plan -auto-approve -var-file="../dev.tfvars"
+
+      - name: Terraform Apply (Storage)
+        run: |
+          terraform apply -auto-approve -var-file="../dev.tfvars"
