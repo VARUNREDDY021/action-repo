@@ -18,32 +18,45 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4  # Updated to latest version
-      
+        uses: actions/checkout@v4  # Latest version
+
       - name: Configure AWS Credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v2  # Updated to v2
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::703671907665:role/GitHubActionsTerraformRole
           aws-region: us-east-1
-          audience: sts.amazonaws.com  # Ensure correct audience
+          audience: sts.amazonaws.com
 
       - name: Verify AWS Credentials
-        run: aws sts get-caller-identity  # Debugging step to verify credentials
+        run: aws sts get-caller-identity
 
       - name: Set Up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: '1.4.0'
 
+      - name: Check Directory Structure (Debugging)
+        run: ls -R
+
       - name: Terraform Init (Network)
         run: |
-          set -e  # Stops execution if any command fails
+          set -e  # Stop execution if any command fails
           terraform -chdir=network init
+
+      - name: Terraform Validate (Network)
+        run: |
+          set -e
+          terraform -chdir=network validate
 
       - name: Terraform Plan (Network)
         run: |
           set -e
-          terraform -chdir=network plan -var-file="../dev.tfvars"
+          if [ -f "dev.tfvars" ]; then
+            terraform -chdir=network plan -var-file="../dev.tfvars"
+          else
+            echo "Error: dev.tfvars not found!"
+            exit 1
+          fi
 
       - name: Terraform Apply (Network)
         run: |
@@ -53,14 +66,4 @@ jobs:
       - name: Terraform Init (Storage)
         run: |
           set -e
-          terraform -chdir=storage init
-
-      - name: Terraform Plan (Storage)
-        run: |
-          set -e
-          terraform -chdir=storage plan -var-file="../dev.tfvars"
-
-      - name: Terraform Apply (Storage)
-        run: |
-          set -e
-          terraform -chdir=storage apply -auto-approve -var-file="../dev.tfvars"
+          
