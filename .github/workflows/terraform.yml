@@ -39,7 +39,7 @@ jobs:
 
       - name: Terraform Plan (Network)
         run: |
-          terraform plan -auto-approve -var-file="../dev.tfvars"
+          terraform plan -var-file="../dev.tfvars"
 
       - name: Terraform Apply (Network)
         run: |
@@ -53,7 +53,7 @@ jobs:
 
       - name: Terraform Plan (Storage)
         run: |
-          terraform plan -auto-approve -var-file="../dev.tfvars"
+          terraform plan -var-file="../dev.tfvars"
 
       - name: Terraform Apply (Storage)
         run: |
